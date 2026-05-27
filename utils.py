@@ -4,14 +4,12 @@ def load_local_css():
     """حقن كود CSS مخصص لجعل الواجهة عصرية وتشبه تطبيقات AI الحديثة"""
     st.markdown("""
         <style>
-        /* تحسين الخطوط والخلفيات */
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap');
         
         html, body, [data-testid="stSidebarNav"] {
             font-family: 'Tajawal', sans-serif;
         }
         
-        /* تصميم بطاقات عرض القوالب */
         .template-card {
             background-color: #1e222b;
             border: 1px solid #3e4451;
@@ -44,7 +42,7 @@ def load_local_css():
             width: 100%;
         }
         </style>
-    """, unsafe_style=False)
+    """, unsafe_allow_html=True)
 
 def get_translation(lang):
     """قاموس اللغات لدعم العربية والإنجليزية"""
@@ -57,8 +55,7 @@ def get_translation(lang):
             "loading": "جاري البحث وجلب القوالب المناسبة...",
             "no_results": "لم نجد قوالب تطابق هذا البحث حالياً. جرب كلمات مفتاحية أخرى.",
             "results_found": "تم العثور على {} قالب مميز لـ:",
-            "download": "🔗 معاينة وتحميل القالب",
-            "lang_label": "🌐 اختر اللغة / Language"
+            "download": "🔗 معاينة وتحميل القالب"
         },
         "en": {
             "title": "🧠 Smart PowerPoint Template Finder",
@@ -68,9 +65,8 @@ def get_translation(lang):
             "loading": "Searching and fetching matching templates...",
             "no_results": "No templates found matching this topic. Try other keywords.",
             "results_found": "Found {} premium templates for:",
-            "download": "🔗 Preview & Download Template",
-            "lang_label": "🌐 اختر اللغة / Language"
+            "download": "🔗 Preview & Download Template"
         }
     }
     return translations[lang]
-  
+    
