@@ -1,64 +1,68 @@
 import requests
-from bs4 import BeautifulSoup
-import urllib.parse
 
 def fetch_templates(query):
     """
-    البحث عن قوالب بناءً على الكلمة المفتاحية للمستخدم.
+    البحث عن القوالب باستخدام واجهة بحث مفتوحة ومستقرة جداً
+    تتجنب الحظر تماماً وتعمل على الهواتف والسحابة بكفاءة
     """
-    # ترميز النص ليتوافق مع الروابط (URL Encoding)
-    encoded_query = urllib.parse.quote(query)
+    # صياغة جملة البحث لتبحث عن القوالب مباشرة
+    search_query = f"{query} powerpoint templates free download"
     
-    # سنستخدم موقع يعتمد بنية بسيطة للبحث كمثال (يمكنك تكييف الروابط والـ Classes حسب الموقع المستهدف)
-    # ملاحظة: بعض المواقع تتطلب توجيه البحث للإنجليزية لنتائج أفضل، سنتعامل مع ما يكتبه المستخدم مباشرة
-    url = f"https://allpt.com/?s={encoded_query}" 
+    # استخدام واجهة بحث سريعة ومفتوحة تعيد البيانات كـ نص منظم
+    url = f"https://api.duckduckgo.com/?q={search_query}&format=json&no_html=1;skip_disambig=1"
     
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36"
     }
     
     results = []
-    
     try:
         response = requests.get(url, headers=headers, timeout=10)
-        if response.status_code != 200:
-            return results
+        if response.status_code == 200:
+            data = response.json()
             
-        soup = BeautifulSoup(response.text, "lxml")
-        
-        # تخصيص المستخرجات بناءً على بنية موقع الهيكل المستهدف
-        # (هذا التحديد متوافق مع بنية مدونات القوالب الشائعة المعتمدة على ووردبريس)
-        articles = soup.find_all("article") or soup.find_all("div", class_="post")
-        
-        for article in articles:
-            # 1. استخراج العنوان
-            title_tag = article.find("h2") or article.find("h3")
-            title = title_tag.get_text(strip=True) if title_tag else "PowerPoint Template"
-            
-            # 2. استخراج رابط المقال/القالب
-            link_tag = article.find("a")
-            link = link_tag["href"] if link_tag and link_tag.has_attr("href") else "#"
-            
-            # 3. استخراج صورة المعاينة
-            img_tag = article.find("img")
-            if img_tag:
-                img_url = img_tag.get("src") or img_tag.get("data-src") or img_tag.get("data-lazy-src")
-            else:
-                # صورة افتراضية في حال عدم وجود صورة للمعاينة
-                img_url = "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=500"
+            # جلب الروابط المتعلقة بالموضوع مباشرة من نتائج البحث الذكية
+            topics = data.get("RelatedTopics", [])
+            for topic in topics:
+                if "Text" in topic and "FirstURL" in topic:
+                    title_text = topic["Text"]
+                    actual_link = topic["FirstURL"]
+                    
+                    # تصفية العناوين الطويلة جداً لتبدو كبطاقة احترافية
+                    short_title = title_text[:60] + "..." if len(title_text) > 60 else title_text
+                    
+                    results.append({
+                        "title": f"📄 {short_title}",
+                        "image": "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=500", # صورة افتراضية عصرية
+                        "link": actual_link
+                    })
+                    
+        # إذا لم يجد نتائج في البحث الذكي المباشر، نستخدم خطة بديلة سريعة لجلب روابط افتراضية موثوقة للموضوع
+        if not results:
+            sites = [
+                {"name": "Slidesgo Templates", "url": f"https://slidesgo.com/search?q={query}"},
+                {"name": "SlidesCarnival Free PPT", "url": f"https://www.slidescarnival.com/?s={query}"},
+                {"name": "AllPPT Free Presentation", "url": f"https://allpt.com/?s={query}"}
+            ]
+            for site in sites:
+                results.append({
+                    "title": f"🔍 اضغط للانتقال المباشر إلى قوالب '{query}' في موقع {site['name']}",
+                    "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500",
+                    "link": site["url"]
+                })
                 
-            # تصفية وترتيب مبدئي: التأكد من أن العنوان يحتوي على جزء من كلمة البحث لزيادة الملاءمة
+    except Exception as e:
+        # خطة طوارئ في حال انقطاع الاتصال بالسحابة: إعطاء أزرار توجيه مباشرة
+        sites = [
+            {"name": "Slidesgo", "url": f"https://slidesgo.com/search?q={query}"},
+            {"name": "SlidesCarnival", "url": f"https://www.slidescarnival.com/?s={query}"}
+        ]
+        for site in sites:
             results.append({
-                "title": title,
-                "image": img_url,
-                "link": link
+                "title": f"🔗 انتقل مباشرة لقوالب {site['name']} الخاصة بموضوع: {query}",
+                "image": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500",
+                "link": site["url"]
             })
             
-        # نظام ترتيب ذكي (Relevance Ranking):
-        # نضع النتائج التي تحتوي الكلمة المفتاحية في العنوان أولاً
-        results.sort(key=lambda x: any(word.lower() in x["title"].lower() for word in query.split()), reverse=True)
-        
-    except Exception as e:
-        print(f"Error during scraping: {e}")
-        
     return results
+    
